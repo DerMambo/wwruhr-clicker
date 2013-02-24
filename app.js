@@ -1,40 +1,34 @@
-// like "import" or "use" in other languages
-// we receive the http-Object
-http = require('http');
-fs = require('fs');
 
-var renderResponse = function (files){
-  var response = '<ul>';
-  var i = 0;
-  var max = files.length;
-  for(i; i < max; i++){
-    response += '<li>' + files[i] + '</li>';
-  }
-  return response += '</ul>';
-};
-
-server = http.createServer(function(req, res){
-  ///////////
-  // classical synchronous approach
-  ///////////
-  //var files = fs.readdirSync(__dirname);
-
-  //res.writeHeader(200, {'Content-Type' : 'text/html'});
-  //return res.end(renderResponse(files));
+var express = require('express'),
+app = express(),
+server = require('http').createServer(app),
+io = require('socket.io').listen(server);
 
 
-  ///////////
-  // Node.js asynchronous style
-  ///////////
-  fs.readdir(__dirname, function(err, files){
-    // readdir calls the callback-function when ready
-    // in the meantime other stuff can be done.
-    // No waiting like in synchronous way.
-    res.writeHeader(200, {'Content-Type' : 'text/html'});
-    return res.end(renderResponse(files));
+
+app.configure(function(){
+  app.use(express.static(__dirname + '/public'));
+});
+
+server.listen(3000);
+
+app.get('/', function(req, res){
+  res.sendfile(__dirname + '/index.html');
+});
+
+var playerId = 0;
+var players = {};
+
+io.sockets.on('connection', function (socket) {
+  playerId++;
+  players['player-' + playerId] = 0;
+  console.log(players);
+
+  socket.emit('playerJoined', { playerId: playerId });
+
+  socket.on('click', function (data) {
+    console.log(data);
+    players['player-' + data.playerId]++;
+    socket.broadcast.emit('clickUpdate', {playerId: data.playerId, clicks: players['player-' + data.playerId]});
   });
-
-
-}).listen(3000, 'localhost');
-
-console.log('Server running at http://localhost:3000');
+});
