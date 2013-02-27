@@ -8,4 +8,4 @@ $(document).ready(function(){
 });
 
 var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
-var socket = io.connect('http://192.168.2.46:3000/');
+var socket = io.connect('http://localhost:3000/');

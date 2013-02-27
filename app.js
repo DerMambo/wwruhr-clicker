@@ -4,8 +4,6 @@ app = express(),
 server = require('http').createServer(app),
 io = require('socket.io').listen(server);
 
-
-
 app.configure(function(){
   app.use(express.static(__dirname + '/public'));
 });
@@ -15,7 +13,6 @@ server.listen(3000);
 app.get('/', function(req, res){
   res.sendfile(__dirname + '/index.html');
 });
-
 
 var players = {};
 var maxClicks = 100;
@@ -44,7 +41,7 @@ io.sockets.on('connection', function (socket) {
     players[player].prog = (players[player].clicks / maxClicks) * 100;
     console.log(maxClicks, players[player]);
     console.log('playerClicked', player);
-    
+
     if(players[player].prog >= 100){
       console.log('player wins', players[player].name);
       io.sockets.emit('gameFinished', players[player]);
@@ -57,11 +54,5 @@ io.sockets.on('connection', function (socket) {
     delete players[socket.playername];
     io.sockets.emit('playerleft', socket.playername);
   });
-/*
-  socket.on('click', function (data) {
-    console.log(data);
-    players['player-' + data.playerId]++;
-    socket.broadcast.emit('clickUpdate', {playerId: data.playerId, clicks: players['player-' + data.playerId]});
-  });
-*/
+
 });
